@@ -6,7 +6,7 @@
 /*   By: dmodrzej <dmodrzej@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/02 20:09:12 by dmodrzej          #+#    #+#             */
-/*   Updated: 2024/05/06 22:45:52 by dmodrzej         ###   ########.fr       */
+/*   Updated: 2024/05/07 18:29:42 by dmodrzej         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,12 @@
 #include "ft_printf/ft_printf.h"
 
 int	g_bit_received;
+
+static void	exit_with_status(const char *message, int code)
+{
+	ft_printf("%s\n", message);
+	exit(code);
+}
 
 void	handle_server_signal(int signum)
 {
@@ -40,7 +46,7 @@ void	send_char(int pid, unsigned char c)
 	}
 }
 
-void	send_signal(int pid, const char *argv)
+void	send_message(int pid, const char *argv)
 {
 	while (*argv)
 		send_char(pid, *argv++);
@@ -54,10 +60,10 @@ int	main(int argc, char **argv)
 	sigset_t			set_client;
 
 	if (argc != 3)
-		exit(ft_printf("Error. Correct format: ./client [PID] [string]\n"));
+		exit_with_status("Error. Correct format: ./client [PID] [string]", 1);
 	server_pid = ft_atoi(argv[1]);
 	if (kill(server_pid, 0) == -1 || server_pid == 0)
-		exit(ft_printf("Invalid PID: %s\n", argv[1]));
+		exit_with_status("Error. Invalid PID", 1);
 	sigemptyset(&set_client);
 	sigaddset(&set_client, SIGUSR1);
 	sa_client = (struct sigaction){0};
@@ -65,8 +71,8 @@ int	main(int argc, char **argv)
 	sa_client.sa_mask = set_client;
 	sa_client.sa_flags = 0;
 	if (sigaction(SIGUSR1, &sa_client, NULL) == -1)
-		exit(ft_printf("Error setting signal handler\n"));
-	send_signal(server_pid, argv[2]);
-	ft_printf("Signal sent successfully\n");
+		exit_with_status("Error setting signal handler", 1);
+	send_message(server_pid, argv[2]);
+	ft_printf("Message sent\n");
 	return (0);
 }

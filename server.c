@@ -6,7 +6,7 @@
 /*   By: dmodrzej <dmodrzej@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/02 20:09:40 by dmodrzej          #+#    #+#             */
-/*   Updated: 2024/05/06 22:42:53 by dmodrzej         ###   ########.fr       */
+/*   Updated: 2024/05/07 18:30:49 by dmodrzej         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,12 @@
 #include "ft_printf/ft_printf.h"
 
 int	g_message_received;
+
+static void	exit_with_status(const char *message, int code)
+{
+	ft_printf("%s\n", message);
+	exit(code);
+}
 
 void	handle_client_signal(int signum, siginfo_t *siginfo, void *other)
 {
@@ -36,10 +42,7 @@ void	handle_client_signal(int signum, siginfo_t *siginfo, void *other)
 	}
 	character <<= 1;
 	if (kill(siginfo->si_pid, SIGUSR1) == -1)
-	{
-		ft_printf("Error sending signal to client\n");
-		exit(1);
-	}
+		exit_with_status("Error sending signal to client", 1);
 }
 
 int	main(void)
@@ -56,7 +59,7 @@ int	main(void)
 	sa_server.sa_flags = SA_SIGINFO;
 	if (sigaction(SIGUSR1, &sa_server, NULL) == -1
 		|| sigaction(SIGUSR2, &sa_server, NULL) == -1)
-		exit(ft_printf("Error setting signal handler\n"));
+		exit_with_status("Error setting signal handler", 1);
 	ft_printf("Server PID: %d\n", getpid());
 	ft_printf("Waiting for signals...\n");
 	while (1)
